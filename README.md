@@ -9,6 +9,7 @@ This tool supports the following connectors:
 - Google BigQuery
 - Panther SIEM
 - Elasticsearch
+- WebHook
 
 ### Other SIEM Integrations
 
@@ -52,7 +53,14 @@ if __name__ == '__main__':
 
 ### CSV
 
-The CSV Export function will output to a specified CSV file. Currently, it will overwrite the file if it already exists. 
+The CSV Export function will output to a specified CSV file. Currently, it will overwrite the file if it already exists.
+
+Initializing Options:
+
+| Option  | Required | Default     | Description                                                                                                                                         |
+|---------|----------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| file    | True     | None        | The name of the file to write the CSV results out to                                                                                                |
+| columns | False    | All Columns | The names of the column headers and the order for the columns. Must match the property names for the issues. If not passed default columns are used |
 
 ```python
 import os
@@ -87,6 +95,12 @@ The BigQuery connector will send data to the specified Table within BigQuery. Cu
 2. In a terminal run `gcloud auth login`
 3. In a terminal run `gcloud config set project $MY_PROJECT_ID`
 
+Initializing Options:
+
+| Option | Required | Default | Description                                                                      |
+|--------|----------|---------|----------------------------------------------------------------------------------|
+| table  | True     | None    | This is the table in the format of `dataset.table` that results will be added to |
+
 ```python
 import os
 from core.socket_reports import Reports
@@ -113,6 +127,14 @@ if __name__ == '__main__':
 The Panther connector requires you to have an HTTP connector setup in the Panther UI. In this example I used a bearer token but this can be overriden by using custom headers if desired.
 
 Configuration can be found [here](panther/README.md)
+
+Initializing Options:
+
+| Option  | Required | Default | Description                                                                                           |
+|---------|----------|---------|-------------------------------------------------------------------------------------------------------|
+| token   | False    | None    | Token to use if you are using Bearer token. Default method if custom headers are not passed to `send` |
+| url     | True     | None    | Panther Webhook URL to POST data to                                                                   |
+| timeout | False    | 10      | Timeout in seconds for requests                                                                       |
 
 ```python
 import os
@@ -170,4 +192,43 @@ if __name__ == '__main__':
     )
     for issue in issue_data:
         es.add_document(issue, elastic_index)
+```
+
+### WebHook
+The WebHook integration is a simple wrapper for sending an HTTP(s) Request to the desired URL.
+
+Initialize Options:
+
+| Option       | Required | Default                                                                                                        | Description                                                      |
+|--------------|----------|----------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| url          | True     | None                                                                                                           | URL for the WebHook                                              |
+| headers      | False    | `{'User-Agent': 'SocketPythonScript/0.0.1', "accept": "application/json", 'Content-Type': "application/json"}` | Default set of headers to use if not specified                   |
+| auth_headers | False    | None                                                                                                           | Dictionary of auth headers to use to authenticate to the WebHook |
+| params       | False    | None                                                                                                           | Dictionary of query params to use if needed                      |
+| timeout      | False    | 10                                                                                                             | Time in seconds to timeout out a request                         |
+
+```python
+import os
+from core.socket_reports import Reports
+from core.connectors.webhook import Webhook
+
+
+if __name__ == '__main__':
+    socket_org = os.getenv("SOCKET_ORG") or exit(1)
+    api_key = os.getenv("SOCKET_API_KEY") or exit(1)
+    start_date = os.getenv("START_DATE") or exit(1)
+    reports = Reports(
+        org=socket_org,
+        api_key=api_key,
+        start_date=start_date
+    )
+    issue_data = reports.get_issues()
+    webhook_url = os.getenv("WEBHOOK_URL") or exit(1)
+    webhook_auth_headers = os.getenv("WEBHOOK_AUTH_HEADERS") or {
+        'Authorization': 'Bearer EXAMPLE'
+    }
+    webhook = Webhook(webhook_url)
+    for issue in issue_data:
+        issue_json = json.loads(str(issue))
+        webhook.send(issue_json)
 ```
