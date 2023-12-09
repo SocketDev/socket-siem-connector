@@ -7,7 +7,7 @@ class Panther:
     url: str
     timeout: int
 
-    def __init__(self, token: str, url: str, timeout: int = 10):
+    def __init__(self, url: str, token: str = None, timeout: int = 10):
         self.token = token
         self.url = url
         self.timeout = timeout
@@ -21,11 +21,12 @@ class Panther:
 
         if headers is None:
             headers = {
-                'Authorization': f"Bearer {self.token}",
                 'User-Agent': 'SocketPythonScript/0.0.1',
                 "accept": "application/json",
                 'Content-Type': "application/json"
             }
+            if self.token is not None:
+                headers['Authorization'] = f"Bearer {self.token}"
         response = requests.request(
             method.upper(),
             self.url,
@@ -41,7 +42,7 @@ class Panther:
             result = response.text
         return result
 
-    def send_to_webhook(self, payload: str, headers: dict = None):
+    def send(self, payload: str, headers: dict = None):
         response = self.do_request(
             method="POST",
             payload=payload,

@@ -5,12 +5,13 @@ from core.connectors.elastic import Elastic
 from core.connectors.bigquery import BigQuery
 from core.connectors.panther import Panther
 from core.connectors.socket_csv import SocketCSV
+from core.connectors.webhook import Webhook
 
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or exit(1)
+    start_date = os.getenv("START_DATE") or None
     reports = Reports(
         org=socket_org,
         api_key=api_key,
@@ -52,3 +53,14 @@ if __name__ == '__main__':
         issue_json = json.loads(str(issue))
         panther.send_to_webhook(str(issue))
         print(f"Processed issue id: {issue.id}")
+
+    # Webhook Example
+    webhook_url = os.getenv("WEBHOOK_URL") or exit(1)
+    webhook_auth_headers = os.getenv("WEBHOOK_AUTH_HEADERS") or {
+        'Authorization': 'Bearer EXAMPLE'
+    }
+    webhook = Webhook(webhook_url)
+    for issue in issue_data:
+        issue_json = json.loads(str(issue))
+        webhook.send(issue_json)
+
