@@ -2,5 +2,6 @@ venv
 *.zip
 *.csv
 *.json
+*.pyc
 .idea
 .DS_Store
