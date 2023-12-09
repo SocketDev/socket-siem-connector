@@ -1,0 +1,55 @@
+fields:
+- name: branch
+  required: false
+  type: string
+- name: commit
+  required: true
+  type: string
+  indicators:
+  - sha1
+- name: commit_url
+  required: false
+  type: string
+  indicators:
+  - url
+- name: created_at
+  required: true
+  type: timestamp
+  timeFormats:
+  - rfc3339
+  isEventTime: true
+- name: id
+  required: true
+  type: string
+- name: issue_category
+  required: true
+  type: string
+- name: issue_severity
+  required: true
+  type: string
+- name: issue_type
+  required: true
+  type: string
+- name: owner
+  required: true
+  type: string
+- name: pkg_name
+  required: true
+  type: string
+- name: pkg_type
+  required: true
+  type: string
+- name: pkg_version
+  required: true
+  type: string
+- name: pr_url
+  required: false
+  type: string
+  indicators:
+  - url
+- name: repo
+  required: false
+  type: string
+- name: report_id
+  required: true
+  type: string

@@ -1,0 +1,6 @@
+venv
+*.zip
+*.csv
+*.json
+.idea
+.DS_Store
