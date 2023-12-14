@@ -27,7 +27,7 @@ The connectors supported by this script have some shared configuration in order 
 | org        | True     | string               | This is the Socket org as in the URL of the Socket Dashboard. Generally this should match your Github Org name                                                          |
 | api_key    | True     | string               | This is the Socket API Key created in the Socket dashboard. This should have the scoped permissions to access reports                                                   |
 | start_date | False    | string(`YYYY-MM-DD`) | If this is not defined then it will pull all reports and their corresponding issues. If defined only reports that match or are newer than the start_date will be pulled |
-
+| report_id  | False    | Socket Report ID     | If this is provided then only the specified report ID will be processed                                                                                                 |
 
 
 ### Example
@@ -39,11 +39,13 @@ from core.socket_reports import Reports
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or exit(1)
+    start_date = os.getenv("START_DATE")
+    report_id = os.getenv("SOCKET_REPORT_ID")
     reports = Reports(
         org=socket_org,
         api_key=api_key,
-        start_date=start_date
+        start_date=start_date,
+        report_id=report_id
     )
     issue_data = reports.get_issues()
 ```
@@ -72,11 +74,13 @@ from core.connectors.socket_csv import SocketCSV
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or exit(1)
+    start_date = os.getenv("START_DATE")
+    report_id = os.getenv("SOCKET_REPORT_ID")
     reports = Reports(
         org=socket_org,
         api_key=api_key,
-        start_date=start_date
+        start_date=start_date,
+        report_id=report_id
     )
     issue_data = reports.get_issues()
 
@@ -111,11 +115,13 @@ from core.connectors.bigquery import BigQuery
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or exit(1)
+    start_date = os.getenv("START_DATE")
+    report_id = os.getenv("SOCKET_REPORT_ID")
     reports = Reports(
         org=socket_org,
         api_key=api_key,
-        start_date=start_date
+        start_date=start_date,
+        report_id=report_id
     )
     issue_data = reports.get_issues()
     bigquery_table = os.getenv('GOOGLE_TABLE') or exit(1)
@@ -145,11 +151,13 @@ from core.connectors.panther import Panther
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or exit(1)
+    start_date = os.getenv("START_DATE")
+    report_id = os.getenv("SOCKET_REPORT_ID")
     reports = Reports(
         org=socket_org,
         api_key=api_key,
-        start_date=start_date
+        start_date=start_date,
+        report_id=report_id
     )
     issue_data = reports.get_issues()
     panther_url = os.getenv('PANTHER_URL') or exit(1)
@@ -176,11 +184,13 @@ from core.connectors.elastic import Elastic
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or exit(1)
+    start_date = os.getenv("START_DATE")
+    report_id = os.getenv("SOCKET_REPORT_ID")
     reports = Reports(
         org=socket_org,
         api_key=api_key,
-        start_date=start_date
+        start_date=start_date,
+        report_id=report_id
     )
     issue_data = reports.get_issues()
     elastic_token = os.getenv('ELASTIC_TOKEN') or exit(1)
@@ -216,11 +226,13 @@ from core.connectors.webhook import Webhook
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or exit(1)
+    start_date = os.getenv("START_DATE")
+    report_id = os.getenv("SOCKET_REPORT_ID")
     reports = Reports(
         org=socket_org,
         api_key=api_key,
-        start_date=start_date
+        start_date=start_date,
+        report_id=report_id
     )
     issue_data = reports.get_issues()
     webhook_url = os.getenv("WEBHOOK_URL") or exit(1)

@@ -18,8 +18,16 @@ class Reports:
     column_names: list
     api_key: str
     owner: str
+    start_date: str
+    report_id: str
 
-    def __init__(self, org: str, api_key: str, start_date: str = None):
+    def __init__(
+            self,
+            org: str,
+            api_key: str,
+            start_date: str = None,
+            report_id: str = None
+    ):
         self.base_url = f"https://socket.dev/dashboard/org/gh/{org}/reports?"
         self.log = logging.getLogger('socket_reports')
         self.log.addHandler(logging.NullHandler())
@@ -28,6 +36,7 @@ class Reports:
         self.owner = org
         self.date_format = "%Y-%m-%d"
         self.socket_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+        self.report_id = report_id
         self.db = SqliteDB(column_names=self.column_names)
         global socket
         socket = SocketDev(
@@ -78,6 +87,8 @@ class Reports:
             )
             if created_at >= start_date:
                 collect_report = True
+        elif self.report_id is not None and report.id == self.report_id:
+            collect_report = True
         else:
             collect_report = True
         return collect_report
