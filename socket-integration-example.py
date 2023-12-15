@@ -51,7 +51,7 @@ if __name__ == '__main__':
     )
     for issue in issue_data:
         issue_json = json.loads(str(issue))
-        panther.send_to_webhook(str(issue))
+        panther.send(str(issue))
         print(f"Processed issue id: {issue.id}")
 
     # Webhook Example
