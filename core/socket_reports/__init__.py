@@ -18,6 +18,7 @@ class Reports:
     column_names: list
     api_key: str
     owner: str
+    timeout: int
     start_date: str
     report_id: str
 
@@ -26,6 +27,7 @@ class Reports:
             org: str,
             api_key: str,
             start_date: str = None,
+            timeout: int = 20,
             report_id: str = None
     ):
         self.base_url = f"https://socket.dev/dashboard/org/gh/{org}/reports?"
@@ -40,7 +42,8 @@ class Reports:
         self.db = SqliteDB(column_names=self.column_names)
         global socket
         socket = SocketDev(
-            token=api_key
+            token=api_key,
+            request_timeout=timeout
         )
 
     def check_if_reports_exist(self, reports: list) -> list:
@@ -199,9 +202,11 @@ class Reports:
             record: Report,
             records: list
     ) -> (list, bool):
+        base_url = "https://api.socket.dev/v0"
+        record_url = f"{base_url}/report/view/{record.id}"
         report_json = Reports.pull_report(
             record.id,
-            record.url
+            record_url
         )
         if report_json is None:
             return records, False
