@@ -1,27 +1,34 @@
 import json
 import os
-from core.socket_reports import Reports
-from core.connectors.elastic import Elastic
-from core.connectors.bigquery import BigQuery
-from core.connectors.panther import Panther
-from core.connectors.socket_csv import SocketCSV
-from core.connectors.webhook import Webhook
+from socketsync.core import Core
+from datetime import datetime, timedelta, timezone
+from socketsync.connectors.elastic import Elastic
+from socketsync.connectors.bigquery import BigQuery
+from socketsync.connectors.panther import Panther
+from socketsync.connectors.csv import CSV
+from socketsync.connectors.webhook import Webhook
+from socketsync.connectors.slack import Slack
 
 
 if __name__ == '__main__':
-    socket_org = os.getenv("SOCKET_ORG") or exit(1)
+    now = datetime.now(tz=timezone.utc) - timedelta(minutes=300)
+    now_str = now.strftime("%Y-%m-%d %H:%M")
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or None
-    reports = Reports(
-        org=socket_org,
+    start_date = os.getenv("START_DATE") or now_str
+    default_branches = [
+        "master",
+        "main"
+    ]
+    reports = Core(
         api_key=api_key,
-        start_date=start_date
+        start_date=start_date,
+        default_branch_only=False
     )
     issue_data = reports.get_issues()
 
     # CSV Example
-    csv_file = "CSV_FILE"
-    csv = SocketCSV(
+    csv_file = "example.csv"
+    csv = CSV(
         file=csv_file
     )
     csv.write_csv(issue_data)
@@ -64,3 +71,8 @@ if __name__ == '__main__':
         issue_json = json.loads(str(issue))
         webhook.send(issue_json)
 
+    slack_url = os.getenv("SLACK_WEBHOOK_URL") or exit(1)
+    slack = Slack(slack_url)
+    for issue in issue_data:
+        issue_json = json.loads(str(issue))
+        slack.send(issue_json)

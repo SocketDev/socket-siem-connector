@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "socketsync"
+version = "1.0.0"
+requires-python = ">= 3.9"
+dependencies = [
+    'requests',
+    'mdutils',
+    'prettytable',
+    'argparse'
+]
+readme = "README.md"
+description = "Socket Security SIEM Sync Tool"
+keywords = ["socketsync", "socket.dev", "sca", "oss", "security"]
+authors = [
+    {name = "Douglas Coburn", email = "douglas@socket.dev"}
+]
+maintainers = [
+    {name = "Douglas Coburn", email = "douglas@socket.dev"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/SocketDev/socket-siem-connector"
+
+[tool.setuptools.packages.find]
+include = [
+    "socketsync"
+]
