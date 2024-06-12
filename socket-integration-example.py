@@ -19,12 +19,12 @@ if __name__ == '__main__':
         "master",
         "main"
     ]
-    reports = Core(
+    core = Core(
         api_key=api_key,
         start_date=start_date,
         default_branch_only=False
     )
-    issue_data = reports.get_issues()
+    issue_data = core.get_issues()
 
     # CSV Example
     csv_file = "example.csv"
