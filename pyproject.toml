@@ -4,13 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "socketsync"
-version = "1.0.0"
+version = "1.0.1"
 requires-python = ">= 3.9"
 dependencies = [
     'requests',
-    'mdutils',
-    'prettytable',
-    'argparse'
+    'brotli',
+    'lxml',
+    'elasticsearch',
+    'google-cloud-bigquery',
+    'slack_sdk'
 ]
 readme = "README.md"
 description = "Socket Security SIEM Sync Tool"
@@ -35,5 +37,6 @@ Homepage = "https://github.com/SocketDev/socket-siem-connector"
 
 [tool.setuptools.packages.find]
 include = [
-    "socketsync"
+    "socketsync",
+    "socketsync.connectors"
 ]
