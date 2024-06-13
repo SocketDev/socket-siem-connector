@@ -10,6 +10,7 @@ This tool supports the following connectors:
 - Panther SIEM
 - Elasticsearch
 - WebHook
+- Slack
 
 ### Other SIEM Integrations
 
@@ -22,32 +23,29 @@ Some SIEM tools have different ways of getting the data into their system.
 The connectors supported by this script have some shared configuration in order to pull the data from Socket.
 
 ### Options
-| Option     | Required | Format               | Description                                                                                                                                                             |
-|------------|----------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| org        | True     | string               | This is the Socket org as in the URL of the Socket Dashboard. Generally this should match your Github Org name                                                          |
-| api_key    | True     | string               | This is the Socket API Key created in the Socket dashboard. This should have the scoped permissions to access reports                                                   |
-| start_date | False    | string(`YYYY-MM-DD`) | If this is not defined then it will pull all reports and their corresponding issues. If defined only reports that match or are newer than the start_date will be pulled |
-| report_id  | False    | Socket Report ID     | If this is provided then only the specified report ID will be processed                                                                                                 |
+| Option     | Required | Format                        | Description                                                                                                                                                             |
+|------------|----------|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| api_key    | True     | string                        | This is the Socket API Key created in the Socket dashboard. This should have the scoped permissions to access reports                                                   |
+| start_date | False    | string(`YYYY-MM-DD HH:MM:SS`) | If this is not defined then it will pull all reports and their corresponding issues. If defined only reports that match or are newer than the start_date will be pulled |
+| report_id  | False    | Socket Report ID              | If this is provided then only the specified report ID will be processed                                                                                                 |
 
 
 ### Example
+
 ```python
 import os
-from core.socket_reports import Reports
-
+from socketsync.core import Core
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     start_date = os.getenv("START_DATE")
-    report_id = os.getenv("SOCKET_REPORT_ID")
-    reports = Reports(
-        org=socket_org,
+    core = Core(
         api_key=api_key,
         start_date=start_date,
         report_id=report_id
     )
-    issue_data = reports.get_issues()
+    issue_data = core.get_issues()
 ```
 
 
@@ -66,26 +64,23 @@ Initializing Options:
 
 ```python
 import os
-from core.socket_reports import Reports
-from core.connectors.socket_csv import SocketCSV
-
-
+from socketsync.core import Core
+from socketsync.connectors.csv import CSV
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     start_date = os.getenv("START_DATE")
     report_id = os.getenv("SOCKET_REPORT_ID")
-    reports = Reports(
-        org=socket_org,
+    core = Core(
         api_key=api_key,
         start_date=start_date,
         report_id=report_id
     )
-    issue_data = reports.get_issues()
+    issue_data = core.get_issues()
 
     csv_file = "CSV_FILE"
-    csv = SocketCSV(
+    csv = CSV(
         file=csv_file
     )
     csv.write_csv(issue_data)
@@ -107,23 +102,20 @@ Initializing Options:
 
 ```python
 import os
-from core.socket_reports import Reports
-from core.connectors.bigquery import BigQuery
-
-
+from socketsync.core import Core
+from socketsync.connectors.bigquery import BigQuery
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     start_date = os.getenv("START_DATE")
     report_id = os.getenv("SOCKET_REPORT_ID")
-    reports = Reports(
-        org=socket_org,
+    core = Core(
         api_key=api_key,
         start_date=start_date,
         report_id=report_id
     )
-    issue_data = reports.get_issues()
+    issue_data = core.get_issues()
     bigquery_table = os.getenv('GOOGLE_TABLE') or exit(1)
     bigquery = BigQuery(bigquery_table)
     errors = bigquery.add_dataset(issue_data, streaming=True)
@@ -144,22 +136,20 @@ Initializing Options:
 
 ```python
 import os
-from core.socket_reports import Reports
-from core.connectors.panther import Panther
-
+from socketsync.core import Core
+from socketsync.connectors.panther import Panther
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     start_date = os.getenv("START_DATE")
     report_id = os.getenv("SOCKET_REPORT_ID")
-    reports = Reports(
-        org=socket_org,
+    core = Core(
         api_key=api_key,
         start_date=start_date,
         report_id=report_id
     )
-    issue_data = reports.get_issues()
+    issue_data = core.get_issues()
     panther_url = os.getenv('PANTHER_URL') or exit(1)
     panther_token = os.getenv('PANTHER_TOKEN') or exit(1)
     panther = Panther(
@@ -168,7 +158,7 @@ if __name__ == '__main__':
     )
     for issue in issue_data:
         issue_json = json.loads(str(issue))
-        panther.send_to_webhook(str(issue))
+        panther.send(str(issue))
         print(f"Processed issue id: {issue.id}")
 ```
 
@@ -177,22 +167,20 @@ The Elasticsearch connector should work with on prem or cloud hosted Elastic sea
 
 ```python
 import os
-from core.socket_reports import Reports
-from core.connectors.elastic import Elastic
-
+from socketsync.core import Core
+from socketsync.connectors.elastic import Elastic
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     start_date = os.getenv("START_DATE")
     report_id = os.getenv("SOCKET_REPORT_ID")
-    reports = Reports(
-        org=socket_org,
+    core = Core(
         api_key=api_key,
         start_date=start_date,
         report_id=report_id
     )
-    issue_data = reports.get_issues()
+    issue_data = core.get_issues()
     elastic_token = os.getenv('ELASTIC_TOKEN') or exit(1)
     elastic_cloud_id = os.getenv('ELASTIC_CLOUD_ID') or exit(1)
     elastic_index = os.getenv('ELASTIC_ID') or exit(1)
@@ -219,22 +207,20 @@ Initialize Options:
 
 ```python
 import os
-from core.socket_reports import Reports
-from core.connectors.webhook import Webhook
-
+from socketsync.core import Core
+from socketsync.connectors.webhook import Webhook
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     start_date = os.getenv("START_DATE")
     report_id = os.getenv("SOCKET_REPORT_ID")
-    reports = Reports(
-        org=socket_org,
+    core = Core(
         api_key=api_key,
         start_date=start_date,
         report_id=report_id
     )
-    issue_data = reports.get_issues()
+    issue_data = core.get_issues()
     webhook_url = os.getenv("WEBHOOK_URL") or exit(1)
     webhook_auth_headers = os.getenv("WEBHOOK_AUTH_HEADERS") or {
         'Authorization': 'Bearer EXAMPLE'
@@ -243,4 +229,39 @@ if __name__ == '__main__':
     for issue in issue_data:
         issue_json = json.loads(str(issue))
         webhook.send(issue_json)
+```
+
+### Slack WebHook
+The Slack WebHook integration is a simple wrapper for sending an HTTP(s) Request to the desired Slack Webhook URL.
+
+Initialize Options:
+
+| Option       | Required | Default                                                                                                        | Description                                                      |
+|--------------|----------|----------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| url          | True     | None                                                                                                           | URL for the WebHook                                              |
+| headers      | False    | `{'User-Agent': 'SocketPythonScript/0.0.1', "accept": "application/json", 'Content-Type': "application/json"}` | Default set of headers to use if not specified                   |
+| params       | False    | None                                                                                                           | Dictionary of query params to use if needed                      |
+| timeout      | False    | 10                                                                                                             | Time in seconds to timeout out a request                         |
+
+```python
+import os
+from socketsync.core import Core
+from socketsync.connectors.slack import Slack
+
+if __name__ == '__main__':
+    socket_org = os.getenv("SOCKET_ORG") or exit(1)
+    api_key = os.getenv("SOCKET_API_KEY") or exit(1)
+    start_date = os.getenv("START_DATE")
+    report_id = os.getenv("SOCKET_REPORT_ID")
+    core = Core(
+        api_key=api_key,
+        start_date=start_date,
+        report_id=report_id
+    )
+    issue_data = core.get_issues()
+    slack_url = os.getenv("SLACK_WEBHOOK_URL") or exit(1)
+    slack = Slack(slack_url)
+    for issue in issue_data:
+        issue_json = json.loads(str(issue))
+        slack.send(issue_json)
 ```
