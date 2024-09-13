@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+elasticsearch = "*"
+google-cloud-bigquery = "*"
+slack-sdk = "*"
+requests = "*"
+socket-sdk-python = "*"
+
+[dev-packages]
+wheel = "*"
+build = "*"
+twine = "*"
+
+[requires]
+python_version = "3.9"

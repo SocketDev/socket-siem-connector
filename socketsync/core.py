@@ -1,15 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import logging
-import sys
-import requests
-import base64
-import json
-from socketsync.exceptions import (
-    APIFailure, APIKeyMissing, APIAccessDenied, APIInsufficientQuota, APIResourceNotFound, APICloudflareError
-)
+from socketdev import socketdev
 from socketsync.issues import AllIssues
 from socketsync.licenses import Licenses
-from socketsync import __version__, default_headers
 from socketsync.classes import (
     Report,
     IssueRecord,
@@ -19,13 +12,18 @@ from socketsync.classes import (
 )
 
 global encoded_key
-api_url = "https://api.socket.dev/v0"
+global socket
+global org_id
+global report_from_time
+socket: socketdev
+org_id: str
+org_slug: str
+report_from_time: int
 timeout = 30
 full_scan_path = ""
 repository_path = ""
 all_issues = AllIssues()
-org_id = None
-org_slug = None
+licenses = Licenses()
 all_new_alerts = False
 default_branch_names = [
         "master",
@@ -33,7 +31,6 @@ default_branch_names = [
     ]
 default_only = False
 security_policy = {}
-licenses = Licenses()
 date_format = "%Y-%m-%d %H:%M"
 socket_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -41,81 +38,8 @@ log = logging.getLogger("socketdev")
 log.addHandler(logging.NullHandler())
 
 
-def encode_key(token: str) -> None:
-    """
-    encode_key takes passed token string and does a base64 encoding. It sets this as a global variable
-    :param token: str of the Socket API Security Token
-    :return:
-    """
-    global encoded_key
-    encoded_key = base64.b64encode(token.encode()).decode('ascii')
-
-
-def do_request(
-        path: str,
-        headers: dict = None,
-        payload: [dict, str] = None,
-        files: list = None,
-        method: str = "GET",
-) -> requests.request:
-    """
-    do_requests is the shared function for making HTTP calls
-
-    :param path: Required path for the request
-    :param headers: Optional dictionary of headers. If not set will use a default set
-    :param payload: Optional dictionary or string of the payload to pass
-    :param files: Optional list of files to upload
-    :param method: Optional method to use, defaults to GET
-    :return:
-    """
-    if encoded_key is None or encoded_key == "":
-        raise APIKeyMissing
-
-    if headers is None:
-        headers = default_headers
-        headers['Authorization'] = f"Basic {encoded_key}"
-    url = f"{api_url}/{path}"
-    response = requests.request(
-        method.upper(),
-        url,
-        headers=headers,
-        data=payload,
-        files=files,
-        timeout=timeout
-    )
-    if response.status_code <= 399:
-        return response
-    elif response.status_code == 400:
-        print(f"url={url}")
-        print(f"payload={payload}")
-        print(f"files={files}")
-        error = {
-            "msg": "bad request",
-            "error": response.text
-        }
-        raise APIFailure(error)
-    elif response.status_code == 401:
-        raise APIAccessDenied("Unauthorized")
-    elif response.status_code == 403:
-        raise APIInsufficientQuota("Insufficient max_quota for API method")
-    elif response.status_code == 404:
-        raise APIResourceNotFound(f"Path not found {path}")
-    elif response.status_code == 429:
-        raise APIInsufficientQuota("Insufficient quota for API route")
-    elif response.status_code == 524:
-        raise APICloudflareError(response.text)
-    else:
-        msg = {
-            "status_code": response.status_code,
-            "error": response.text,
-            "UnexpectedError": "There was an unexpected error using the API"
-        }
-        raise APIFailure(msg)
-
-
 class Core:
     api_key: str
-    base_api_url: str
     request_timeout: int
     reports: list
     plugins: dict
@@ -123,6 +47,7 @@ class Core:
     start_date: str
     default_branch_only: bool
     report_id: str
+    from_time: int
 
     def __init__(
             self,
@@ -133,23 +58,31 @@ class Core:
             start_date: str = None,
             default_branches: list = None,
             default_branch_only: bool = False,
-            report_id: str = None
+            report_id: str = None,
+            from_time: int = 300
     ):
+        self.api_key = api_key
         self.report_id = report_id
         self.default_branches = default_branches
+        self.from_time = from_time
         if self.default_branches is not None:
             global default_branch_names
             default_branch_names = self.default_branches
         self.default_branch_only = default_branch_only
         global default_only
         default_only = self.default_branch_only
-        self.api_key = api_key + ":"
-        encode_key(self.api_key)
         self.start_date = start_date
+        global report_from_time
+        if self.start_date is not None:
+            log.warning("start_date has been deprecated in favor of from_time and will be removed")
+            start_time = datetime.strptime(self.start_date, date_format)
+            end_time = datetime.now(timezone.utc)
+            diff = (end_time - start_time).total_seconds()
+            report_from_time = diff
+        else:
+            report_from_time = from_time
         self.socket_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
         self.base_api_url = base_api_url
-        if self.base_api_url is not None:
-            Core.set_api_url(self.base_api_url)
         self.request_timeout = request_timeout
         if self.request_timeout is not None:
             Core.set_timeout(self.request_timeout)
@@ -157,6 +90,8 @@ class Core:
             global all_new_alerts
             all_new_alerts = True
         self.plugins = {}
+        global socket
+        socket = socketdev(token=self.api_key, timeout=timeout)
         Core.set_org_vars()
 
     @staticmethod
@@ -173,16 +108,6 @@ class Core:
         security_policy = Core.get_security_policy()
 
     @staticmethod
-    def set_api_url(base_url: str):
-        """
-        Set the global API URl if provided
-        :param base_url:
-        :return:
-        """
-        global api_url
-        api_url = base_url
-
-    @staticmethod
     def set_timeout(request_timeout: int):
         """
         Set the global Requests timeout
@@ -191,6 +116,7 @@ class Core:
         """
         global timeout
         timeout = request_timeout
+        socket.set_timeout(timeout)
 
     @staticmethod
     def get_org_id_slug() -> (str, str):
@@ -198,47 +124,15 @@ class Core:
         Gets the Org ID and Org Slug for the API Token
         :return:
         """
-        path = "organizations"
-        response = do_request(path)
-        data = response.json()
-        organizations = data.get("organizations")
+        organizations = socket.org.get()
+        orgs = organizations.get("organizations")
         new_org_id = None
         new_org_slug = None
-        if len(organizations) == 1:
-            for key in organizations:
+        if orgs is not None and len(orgs) == 1:
+            for key in orgs:
                 new_org_id = key
-                new_org_slug = organizations[key].get('slug')
+                new_org_slug = orgs[key].get('slug')
         return new_org_id, new_org_slug
-
-    @staticmethod
-    def get_reports() -> dict:
-        path = "report/list"
-        results = do_request(path)
-        try:
-            reports = results.json()
-            return reports
-        except Exception as error:
-            log.error("Failed to get report list json")
-            log.error(error)
-            sys.exit(2)
-
-    @staticmethod
-    def get_sbom_data(report_id: str) -> list:
-        path = f"sbom/view/{report_id}"
-        response = do_request(path)
-        results = []
-        try:
-            data = response.text
-            data.strip('"')
-            data.strip()
-            for line in data.split("\n"):
-                if line != '"' and line != "" and line is not None:
-                    item = json.loads(line)
-                    results.append(item)
-        except Exception as error:
-            log.debug(f"Failed to retrieve report for {report_id}")
-            log.debug(error)
-        return results
 
     @staticmethod
     def get_security_policy() -> dict:
@@ -246,14 +140,7 @@ class Core:
         Get the Security policy and determine the effective Org security policy
         :return:
         """
-        path = "settings"
-        payload = [
-            {
-                "organization": org_id
-            }
-        ]
-        response = do_request(path, payload=json.dumps(payload), method="POST")
-        data = response.json()
+        data = socket.settings.get(org_id)
         defaults = data.get("defaults")
         default_rules = defaults.get("issueRules")
         entries = data.get("entries")
@@ -300,14 +187,13 @@ class Core:
         return reports
 
     def get_issues(self) -> list:
-        raw_reports = Core.get_reports()
+        raw_reports = socket.report.list(int(report_from_time))
         reports = Core.create_reports_list(raw_reports)
-        from_time = datetime.strptime(self.start_date, date_format)
         issues = []
         if self.report_id is not None:
             Core.handle_single_report(reports, self.report_id, issues)
         else:
-            Core.handle_reports(reports, from_time, issues)
+            Core.handle_reports(reports, issues)
         return issues
 
     @staticmethod
@@ -320,8 +206,8 @@ class Core:
         if report_data is None:
             log.error(f"Unable to find report {report_id}")
         else:
-            sbom = Core.get_sbom_data(report_data.id)
-            packages = Core.create_sbom_dict(sbom)
+            sbom = socket.sbom.view(report_data.id)
+            packages = socket.sbom.create_packages_dict(sbom)
             for package_id in packages:
                 package: Package
                 package = packages[package_id]
@@ -329,19 +215,17 @@ class Core:
         return issues
 
     @staticmethod
-    def handle_reports(reports: list, from_time: datetime, issues: list) -> list:
+    def handle_reports(reports: list, issues: list) -> list:
         if default_only:
             reports = Core.get_latest_default_branch(reports)
         for report in reports:
             report: Report
-            created_at = datetime.strptime(report.created_at, socket_date_format)
-            if from_time is None or (created_at >= from_time):
-                sbom = Core.get_sbom_data(report.id)
-                packages = Core.create_sbom_dict(sbom)
-                for package_id in packages:
-                    package: Package
-                    package = packages[package_id]
-                    issues = Core.create_issue_alerts(package, issues, packages, report)
+            sbom = socket.sbom.view(report.id)
+            packages = socket.sbom.create_packages_dict(sbom)
+            for package_id in packages:
+                package: Package
+                package = packages[package_id]
+                issues = Core.create_issue_alerts(package, issues, packages, report)
         return issues
 
     @staticmethod

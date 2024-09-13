@@ -4,18 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "socketsync"
-version = "1.0.1"
 requires-python = ">= 3.9"
 dependencies = [
     'requests',
-    'brotli',
-    'lxml',
-    'elasticsearch',
-    'google-cloud-bigquery',
-    'slack_sdk'
+    "socket-sdk-python"
 ]
 readme = "README.md"
-description = "Socket Security SIEM Sync Tool"
+description = "Socket Security CLI for CI/CD"
 keywords = ["socketsync", "socket.dev", "sca", "oss", "security"]
 authors = [
     {name = "Douglas Coburn", email = "douglas@socket.dev"}
@@ -32,11 +27,18 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
+[project.scripts]
+socketcli = "socketsync.socketsync:cli"
+
 [project.urls]
-Homepage = "https://github.com/SocketDev/socket-siem-connector"
+Homepage = "https://socket.dev"
 
 [tool.setuptools.packages.find]
 include = [
     "socketsync",
+    "socketsync.core",
     "socketsync.connectors"
 ]
+
+[tool.setuptools.dynamic]
+version = {attr = "socketsync.__version__"}

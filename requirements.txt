@@ -1,6 +1,0 @@
-requests
-brotli
-lxml
-elasticsearch
-google-cloud-bigquery
-slack_sdk
