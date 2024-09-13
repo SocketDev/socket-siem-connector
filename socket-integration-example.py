@@ -1,7 +1,6 @@
 import json
 import os
 from socketsync.core import Core
-from datetime import datetime, timedelta, timezone
 from socketsync.connectors.elastic import Elastic
 from socketsync.connectors.bigquery import BigQuery
 from socketsync.connectors.panther import Panther
@@ -11,17 +10,15 @@ from socketsync.connectors.slack import Slack
 
 
 if __name__ == '__main__':
-    now = datetime.now(tz=timezone.utc) - timedelta(minutes=300)
-    now_str = now.strftime("%Y-%m-%d %H:%M")
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE") or now_str
+    from_time = os.getenv("FROM_TIME") or 300
     default_branches = [
         "master",
         "main"
     ]
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         default_branch_only=False
     )
     issue_data = core.get_issues()
