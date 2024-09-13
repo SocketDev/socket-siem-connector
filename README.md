@@ -23,11 +23,12 @@ Some SIEM tools have different ways of getting the data into their system.
 The connectors supported by this script have some shared configuration in order to pull the data from Socket.
 
 ### Options
-| Option    | Required | Format           | Description                                                                                                               |
-|-----------|----------|------------------|---------------------------------------------------------------------------------------------------------------------------|
-| api_key   | True     | string           | This is the Socket API Key created in the Socket dashboard. This should have the scoped permissions to access reports     |
-| from_time | False    | int              | This is the number of seconds to pull reports from. If this is not defined then it will pull the last 30 days of reports. |
-| report_id | False    | Socket Report ID | If this is provided then only the specified report ID will be processed                                                   |
+| Option          | Required | Format           | Description                                                                                                                           |
+|-----------------|----------|------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| api_key         | True     | string           | This is the Socket API Key created in the Socket dashboard. This should have the scoped permissions to access reports                 |
+| from_time       | False    | int              | This is the number of seconds to pull reports from. If this is not defined then it will pull the last 30 days of reports.             |
+| report_id       | False    | Socket Report ID | If this is provided then only the specified report ID will be processed                                                               |
+| request_timeout | False    | int              | This is the number of seconds to wait for an API request to complete before killing it and returning an error. Defaults to 30 seconds |
 
 
 ### Example
@@ -43,7 +44,8 @@ if __name__ == '__main__':
     core = Core(
         api_key=api_key,
         start_date=start_date,
-        report_id=report_id
+        report_id=report_id,
+        request_timeout=300
     )
     issue_data = core.get_issues()
 ```

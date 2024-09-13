@@ -19,7 +19,8 @@ if __name__ == '__main__':
     core = Core(
         api_key=api_key,
         from_time=from_time,
-        default_branch_only=False
+        default_branch_only=False,
+        request_timeout=300
     )
     issue_data = core.get_issues()
 

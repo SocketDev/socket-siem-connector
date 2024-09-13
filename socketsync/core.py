@@ -116,7 +116,7 @@ class Core:
         """
         global timeout
         timeout = request_timeout
-        socket.set_timeout(timeout)
+        socketdev.set_timeout(timeout)
 
     @staticmethod
     def get_org_id_slug() -> (str, str):
