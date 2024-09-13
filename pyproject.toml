@@ -10,7 +10,7 @@ dependencies = [
     'requests',
     "socket-sdk-python"
 ]
-readme = "README.rst"
+readme = "README.md"
 license = {file = "LICENSE"}
 description = "Socket Security Sync Tool"
 keywords = ["socketsecurity", "socket.dev", "sca", "oss", "security", "sdk"]
