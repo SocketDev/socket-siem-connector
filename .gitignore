@@ -10,3 +10,9 @@ venv
 bin
 build
 dist
+main.py
+test.py
+.venv
+*.build
+*.dist
+*.cpython-312.pyc

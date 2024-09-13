@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=$(grep -o "__version__.*" socketsync/__init__.py | awk '{print $3}' | tr -d "'" | tr -d '\r')
+VERSION=$(grep -o "__version__.*" socketsync/__init__.py | awk '{print $3}' | tr -d "'" | tr -d '\r' | tr -dc '[:alnum:]\.' )
 ENABLE_PYPI_BUILD=$1
 
 if [ -z $ENABLE_PYPI_BUILD ]; then
