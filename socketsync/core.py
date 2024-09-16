@@ -3,6 +3,7 @@ import logging
 from socketdev import socketdev
 from socketsync.issues import AllIssues
 from socketsync.licenses import Licenses
+from typing import Union
 from socketsync.classes import (
     Report,
     IssueRecord,
@@ -187,20 +188,21 @@ class Core:
         return reports
 
     def get_issues(self) -> list:
-        raw_reports = socket.report.list(int(report_from_time))
-        reports = Core.create_reports_list(raw_reports)
         issues = []
         if self.report_id is not None:
-            Core.handle_single_report(reports, self.report_id, issues)
+            raw_reports = socket.report.list()
+            Core.handle_single_report(raw_reports, self.report_id, issues)
         else:
+            raw_reports = socket.report.list(int(report_from_time))
+            reports = Core.create_reports_list(raw_reports)
             Core.handle_reports(reports, issues)
         return issues
 
     @staticmethod
-    def handle_single_report(reports: list, report_id: str, issues: list) -> list:
+    def handle_single_report(reports: Union[list, dict], report_id: str, issues: list) -> list:
         report_data = None
-        for report_raw in reports:
-            report = Report(**report_raw)
+        for item in reports:
+            report = Report(**item)
             if report.id == report_id:
                 report_data = report
         if report_data is None:

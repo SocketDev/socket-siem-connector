@@ -20,7 +20,8 @@ if __name__ == '__main__':
         api_key=api_key,
         from_time=from_time,
         default_branch_only=False,
-        request_timeout=300
+        request_timeout=300,
+        report_id="e0637e64-9df2-45c3-8f61-fa887206f089"
     )
     issue_data = core.get_issues()
 
