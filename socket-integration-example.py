@@ -22,7 +22,6 @@ if __name__ == '__main__':
         from_time=from_time,
         default_branch_only=False,
         request_timeout=300,
-        # report_id="e0637e64-9df2-45c3-8f61-fa887206f089"
     )
     logging.basicConfig(level=logging.DEBUG)
     # core.set_log_level(logging.DEBUG)
