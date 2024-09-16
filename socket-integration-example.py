@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from socketsync.core import Core
 from socketsync.connectors.elastic import Elastic
@@ -20,8 +21,10 @@ if __name__ == '__main__':
         api_key=api_key,
         from_time=from_time,
         default_branch_only=False,
-        request_timeout=300
+        request_timeout=300,
     )
+    logging.basicConfig(level=logging.DEBUG)
+    # core.set_log_level(logging.DEBUG)
     issue_data = core.get_issues()
 
     # CSV Example

@@ -1,8 +1,10 @@
+import json
 from datetime import datetime, timezone, timedelta
 import logging
 from socketdev import socketdev
 from socketsync.issues import AllIssues
 from socketsync.licenses import Licenses
+from typing import Union
 from socketsync.classes import (
     Report,
     IssueRecord,
@@ -36,6 +38,11 @@ socket_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 log = logging.getLogger("socketdev")
 log.addHandler(logging.NullHandler())
+
+__all__ = [
+    "Core",
+    "log"
+]
 
 
 class Core:
@@ -74,7 +81,11 @@ class Core:
         self.start_date = start_date
         global report_from_time
         if self.start_date is not None:
+            suggested_method = (
+                "Suggested Replacement: from_time = int((datetime.now(timezone.utc) - timedelta(days=1)).timestamp())"
+            )
             log.warning("start_date has been deprecated in favor of from_time and will be removed")
+            log.warning(suggested_method)
             start_time = datetime.strptime(self.start_date, date_format)
             end_time = datetime.now(timezone.utc)
             diff = (end_time - start_time).total_seconds()
@@ -100,12 +111,21 @@ class Core:
         Sets the main shared global variables
         :return:
         """
+        log.debug("Getting Organization Configuration")
         global org_id, org_slug, full_scan_path, repository_path, security_policy
         org_id, org_slug = Core.get_org_id_slug()
         base_path = f"orgs/{org_slug}"
         full_scan_path = f"{base_path}/full-scans"
         repository_path = f"{base_path}/repos"
         security_policy = Core.get_security_policy()
+        output = {
+            "org_id": org_id,
+            "base_path": base_path,
+            "full_scan_path": full_scan_path,
+            "repository_path": repository_path,
+            "security_policy": security_policy
+        }
+        log.debug(f"Org Settings: {json.dumps(output)}")
 
     @staticmethod
     def set_timeout(request_timeout: int):
@@ -114,6 +134,7 @@ class Core:
         :param request_timeout:
         :return:
         """
+        log.debug(f"Setting API request timeout to {request_timeout} seconds")
         global timeout
         timeout = request_timeout
         socketdev.set_timeout(timeout)
@@ -160,6 +181,7 @@ class Core:
 
     @staticmethod
     def get_latest_default_branch(reports: list) -> list:
+        log.debug("Looking for latest default branches")
         latest = {}
         all_reports = []
         for report in reports:
@@ -179,39 +201,31 @@ class Core:
         return all_reports
 
     @staticmethod
-    def create_reports_list(raw_reports: dict) -> list:
+    def create_reports_list(raw_reports: dict, report_id: str = None) -> list:
         reports = []
+        commits = []
         for raw_report in raw_reports:
             report = Report(**raw_report)
-            reports.append(report)
+            if report_id is not None and report_id == report.id:
+                reports.append(report)
+            elif report_id is None:
+                if report.commit not in commits or report.commit is None or report.commit == "":
+                    reports.append(report)
+                    commits.append(report.commit)
+                else:
+                    reports.append(report)
         return reports
 
     def get_issues(self) -> list:
-        raw_reports = socket.report.list(int(report_from_time))
-        reports = Core.create_reports_list(raw_reports)
         issues = []
         if self.report_id is not None:
-            Core.handle_single_report(reports, self.report_id, issues)
+            all_time = (datetime.now(timezone.utc) - timedelta(days=1825)).timestamp()
+            raw_reports = socket.report.list(int(all_time))
         else:
-            Core.handle_reports(reports, issues)
-        return issues
-
-    @staticmethod
-    def handle_single_report(reports: list, report_id: str, issues: list) -> list:
-        report_data = None
-        for report_raw in reports:
-            report = Report(**report_raw)
-            if report.id == report_id:
-                report_data = report
-        if report_data is None:
-            log.error(f"Unable to find report {report_id}")
-        else:
-            sbom = socket.sbom.view(report_data.id)
-            packages = socket.sbom.create_packages_dict(sbom)
-            for package_id in packages:
-                package: Package
-                package = packages[package_id]
-                issues = Core.create_issue_alerts(package, issues, packages, report_data)
+            raw_reports = socket.report.list(int(report_from_time))
+        reports = Core.create_reports_list(raw_reports, self.report_id)
+        log.debug(f"Found {len(reports)} Socket Scans")
+        Core.handle_reports(reports, issues)
         return issues
 
     @staticmethod
@@ -220,8 +234,10 @@ class Core:
             reports = Core.get_latest_default_branch(reports)
         for report in reports:
             report: Report
+            log.debug(f"Getting results for scan id {report.id}")
             sbom = socket.sbom.view(report.id)
             packages = socket.sbom.create_packages_dict(sbom)
+            log.debug(f"Finding issues in {report.id}")
             for package_id in packages:
                 package: Package
                 package = packages[package_id]
@@ -286,6 +302,7 @@ class Core:
                 is_error=is_error
             )
             if (not all_new_alerts and is_error) or all_new_alerts:
+                log.debug(f"Found issue {issue_alert.title} for scan {report.id}")
                 alerts.append(issue_alert)
         return alerts
 
@@ -371,7 +388,7 @@ class Core:
         for item in sbom:
             package = Package(**item)
             if package.id in packages:
-                print("Duplicate package?")
+                log.debug(f"Duplicate package id found: {package.id}")
             else:
                 package = Core.get_license_details(package)
                 packages[package.id] = package
