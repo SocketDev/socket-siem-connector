@@ -147,6 +147,11 @@ class Issue:
     introduced_by: list
     manifests: str
     pkg_url: str
+    warn: bool
+    error: bool
+    ignore: bool
+    monitor: bool
+    action: str
 
     def __init__(self, **kwargs):
         if kwargs:
@@ -159,6 +164,14 @@ class Issue:
             self.introduced_by = []
         if not hasattr(self, "manifests"):
             self.manifests = ""
+        if not hasattr(self, "warn"):
+            self.warn = False
+        if not hasattr(self, "error"):
+            self.error = False
+        if not hasattr(self, "ignore"):
+            self.ignore = False
+        if not hasattr(self, "monitor"):
+            self.monitor = False
         self.pkg_url = f"https://socket.dev/{self.pkg_type}/package/{self.pkg_name}/overview/{self.pkg_version}"
 
     def __str__(self):

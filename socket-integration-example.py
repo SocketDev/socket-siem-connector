@@ -22,8 +22,9 @@ if __name__ == '__main__':
         from_time=from_time,
         default_branch_only=False,
         request_timeout=300,
+        actions_override=["warn"]
     )
-    logging.basicConfig(level=logging.DEBUG)
+    # logging.basicConfig(level=logging.DEBUG)
     # core.set_log_level(logging.DEBUG)
     issue_data = core.get_issues()
 

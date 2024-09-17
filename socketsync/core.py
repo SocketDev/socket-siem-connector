@@ -17,10 +17,12 @@ global encoded_key
 global socket
 global org_id
 global report_from_time
+global actions
 socket: socketdev
 org_id: str
 org_slug: str
 report_from_time: int
+actions: list[str]
 timeout = 30
 full_scan_path = ""
 repository_path = ""
@@ -55,6 +57,8 @@ class Core:
     default_branch_only: bool
     report_id: str
     from_time: int
+    actions_override: list[str]
+    enable_all_alerts: bool
 
     def __init__(
             self,
@@ -66,8 +70,12 @@ class Core:
             default_branches: list = None,
             default_branch_only: bool = False,
             report_id: str = None,
-            from_time: int = 300
+            from_time: int = 300,
+            actions_override: list = None
     ):
+        self.actions_override = actions_override
+        global actions
+        actions = self.actions_override
         self.api_key = api_key
         self.report_id = report_id
         self.default_branches = default_branches
@@ -301,9 +309,19 @@ class Core:
                 introduced_by=introduced_by,
                 is_error=is_error
             )
-            if (not all_new_alerts and is_error) or all_new_alerts:
+            if alert.type in security_policy:
+                action = security_policy[alert.type]['action']
+                setattr(issue_alert, action, True)
+                setattr(issue_alert, "action", action)
+            if (not all_new_alerts and actions is None and (issue_alert.error or issue_alert.warn)) or all_new_alerts:
                 log.debug(f"Found issue {issue_alert.title} for scan {report.id}")
-                alerts.append(issue_alert)
+                if issue_alert not in alerts:
+                    alerts.append(issue_alert)
+            elif actions is not None:
+                for override in actions:
+                    if issue_alert.action == override.lower():
+                        log.debug(f"Found issue {issue_alert.title} for scan {report.id}")
+                        alerts.append(issue_alert)
         return alerts
 
     @staticmethod
