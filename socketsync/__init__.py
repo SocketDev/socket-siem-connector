@@ -2,7 +2,7 @@ import logging
 
 
 __author__ = 'socket.dev'
-__version__ = '1.0.7'
+__version__ = '1.0.8'
 __all__ = [
     "log",
     "__version__",
@@ -27,7 +27,8 @@ columns = [
     "severity",
     "pr",
     "commit",
-    "created_at"
+    "created_at",
+    "action"
 ]
 
 default_headers = {
