@@ -57,7 +57,7 @@ class Report:
                 self.pull_requests = [self.pull_request]
         if not hasattr(self, 'pull_requests') and hasattr(self, 'pull_request'):
             self.pull_requests = [self.pull_request]
-        if self.html_report_url is not None:
+        if hasattr(self, 'html_report_url') and self.html_report_url is not None:
             self.url = self.html_report_url
         if not hasattr(self, 'commit'):
             self.commit = self.commit_hash
