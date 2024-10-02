@@ -174,6 +174,7 @@ class Issue:
     ignore: bool
     monitor: bool
     action: str
+    direct: bool
 
     def __init__(self, **kwargs):
         if kwargs:
@@ -194,6 +195,8 @@ class Issue:
             self.ignore = False
         if not hasattr(self, "monitor"):
             self.monitor = False
+        if not hasattr(self, "direct"):
+            self.direct = False
         self.pkg_url = f"https://socket.dev/{self.pkg_type}/package/{self.pkg_name}/overview/{self.pkg_version}"
 
     def __str__(self):

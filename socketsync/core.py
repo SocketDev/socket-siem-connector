@@ -61,6 +61,7 @@ class Core:
     from_time: int
     actions_override: list[str]
     enable_all_alerts: bool
+    properties: list
 
     def __init__(
             self,
@@ -73,7 +74,8 @@ class Core:
             default_branch_only: bool = False,
             report_id: str = None,
             from_time: int = 300,
-            actions_override: list = None
+            actions_override: list = None,
+            properties: list = None
     ):
         self.actions_override = actions_override
         global actions
@@ -82,6 +84,7 @@ class Core:
         self.report_id = report_id
         self.default_branches = default_branches
         self.from_time = from_time
+        self.properties = properties
         if self.default_branches is not None:
             global default_branch_names
             default_branch_names = self.default_branches
@@ -335,7 +338,8 @@ class Core:
                 suggestion=suggestion,
                 next_step_title=next_step_title,
                 introduced_by=introduced_by,
-                is_error=is_error
+                is_error=is_error,
+                direct=package.direct
             )
             if alert.type in security_policy:
                 action = security_policy[alert.type]['action']
