@@ -2,9 +2,9 @@ import json
 from datetime import datetime, timezone, timedelta
 import logging
 from socketdev import socketdev
+from socketsync.classes import Repository
 from socketsync.issues import AllIssues
 from socketsync.licenses import Licenses
-from typing import Union
 from socketsync.classes import (
     Report,
     IssueRecord,
@@ -18,6 +18,8 @@ global socket
 global org_id
 global report_from_time
 global actions
+global repos
+repos: dict
 socket: socketdev
 org_id: str
 org_slug: str
@@ -188,25 +190,51 @@ class Core:
         return org_rules
 
     @staticmethod
-    def get_latest_default_branch(reports: list) -> list:
+    def get_latest_default_branch() -> list:
         log.debug("Looking for latest default branches")
-        latest = {}
         all_reports = []
-        for report in reports:
-            report: Report
-            if report.branch in default_branch_names and report.repo not in latest:
-                latest[report.repo] = report
-            if report.branch in default_branch_names:
-                old_report: Report
-                old_report = latest[report.repo]
-                old_created_at = datetime.strptime(old_report.created_at, socket_date_format)
-                created_at = datetime.strptime(report.created_at, socket_date_format)
-                if created_at > old_created_at:
-                    latest[report.repo] = report
-        for repo_name in latest:
-            report = latest[repo_name]
-            all_reports.append(report)
+        Core.get_repos()
+        for repo_id in repos:
+            repo: Repository
+            repo = repos[repo_id]
+            if repo.head_full_scan_id is not None and repo.head_full_scan_id != "":
+                try:
+                    report_data = socket.fullscans.metadata(org_slug, repo.head_full_scan_id)
+                    report = Report(**report_data)
+                    from_time = (datetime.now() - timedelta(seconds=int(report_from_time)))
+                    created_at = datetime.strptime(report.created_at, socket_date_format)
+                    if created_at > from_time:
+                        all_reports.append(report)
+                except Exception as error:
+                    log.error(f"Unable to get metadata for report {repo.head_full_scan_id} for repo {repo.name}")
+                    log.error(error)
         return all_reports
+
+    @staticmethod
+    def get_repos() -> None:
+        repos_info = {}
+        params = {
+            "sort": "name",
+            "direction": "asc",
+            "per_page": "10",
+            "page": 1
+        }
+        repos_data = socket.repos.get(org_slug, **params)
+        all_repos = repos_data['results']
+        next_page = repos_data['nextPage']
+        while next_page is not None:
+            params['page'] = next_page
+            repos_data = socket.repos.get(org_slug, **params)
+            all_repos.extend(repos_data['results'])
+            next_page = repos_data['nextPage']
+            if next_page == 0:
+                next_page = None
+        for repo_data in all_repos:
+            repo = Repository(**repo_data)
+            repos_info[repo.id] = repo
+        global repos
+        repos = repos_info
+        return
 
     @staticmethod
     def create_reports_list(raw_reports: dict, report_id: str = None) -> list:
@@ -227,11 +255,14 @@ class Core:
     def get_issues(self) -> list:
         issues = []
         if self.report_id is not None:
-            all_time = (datetime.now(timezone.utc) - timedelta(days=1825)).timestamp()
-            raw_reports = socket.report.list(int(all_time))
+            report_data = socket.fullscans.metadata(org_slug, self.report_id)
+            report = Report(**report_data)
+            reports = [report]
+        elif self.default_branch_only:
+            reports = Core.get_latest_default_branch()
         else:
-            raw_reports = socket.report.list(int(report_from_time))
-        reports = Core.create_reports_list(raw_reports, self.report_id)
+            reports = socket.fullscans.get(org_slug, {'from': int(report_from_time)})
+        # reports = Core.create_reports_list(raw_reports, self.report_id)
         log.debug(f"Found {len(reports)} Socket Scans")
         Core.handle_reports(reports, issues)
         return issues
@@ -239,11 +270,11 @@ class Core:
     @staticmethod
     def handle_reports(reports: list, issues: list) -> list:
         if default_only:
-            reports = Core.get_latest_default_branch(reports)
+            reports = Core.get_latest_default_branch()
         for report in reports:
             report: Report
             log.debug(f"Getting results for scan id {report.id}")
-            sbom = socket.sbom.view(report.id)
+            sbom = socket.fullscans.stream(org_slug, report.id)
             packages = socket.sbom.create_packages_dict(sbom)
             log.debug(f"Finding issues in {report.id}")
             for package_id in packages:
@@ -280,18 +311,15 @@ class Core:
                 suggestion = ''
                 next_step_title = ''
             introduced_by = Core.get_source_data(package, packages)
-            pr = ""
-            if report.pull_requests is not None:
-                for pr_number in report.pull_requests:
-                    pr += f"{pr_number};"
-                pr = pr.strip(";")
+            pr = str(report.pull_request)
             is_error = Core.is_error(alert)
             issue_alert = IssueRecord(
                 owner=report.owner,
                 repo=report.repo,
+                branch=report.branch,
                 report_id=report.id,
                 pr=pr,
-                commit=report.commit,
+                commit=report.commit_hash,
                 created_at=report.created_at,
                 pkg_type=package.type,
                 pkg_name=package.name,
