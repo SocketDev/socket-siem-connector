@@ -20,9 +20,7 @@ if __name__ == '__main__':
     core = Core(
         api_key=api_key,
         from_time=from_time,
-        default_branch_only=False,
-        request_timeout=300,
-        actions_override=["warn"]
+        request_timeout=300
     )
     # logging.basicConfig(level=logging.DEBUG)
     # core.set_log_level(logging.DEBUG)

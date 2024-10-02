@@ -29,8 +29,7 @@ The connectors supported by this script have some shared configuration in order 
 | from_time           | False    | int              | This is the number of seconds to pull reports from. If this is not defined then it will pull the last 30 days of reports.                   |
 | report_id           | False    | Socket Report ID | If this is provided then only the specified report ID will be processed                                                                     |
 | request_timeout     | False    | int              | This is the number of seconds to wait for an API request to complete before killing it and returning an error. Defaults to 30 seconds       |
-| default_branches    | False    | list[str]        | Only required if `default_branch_only` is set to specify the names patterns of default branches like `main` or `master`                     |
-| default_branch_only | False    | boolean          | If enabled only reports where the branch name matches what is in `default_branches` will be kept                                            |
+| default_branch_only | False    | boolean          | If enabled only reports where the branch name matches what is the latest report for each default branch per repo                            |
 | from_time           | False    | int              | Period in seconds to pull reports when not specifying a specific `report_id`. If not set defaults to 30 days                                |
 | actions_override    | False    | list[str]        | List of acceptable values to override the security policy configuration of issues to include. I.E. `error`, `warn`, `monitor`, and `ignore` |
 

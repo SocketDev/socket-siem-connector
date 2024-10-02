@@ -19,15 +19,24 @@ __all__ = [
 
 
 class Report:
-    branch: str
-    commit: str
     id: str
+    created_at: str
+    updated_at: str
+    organization_id: str
+    repository_id: str
+    committers: list
+    branch: str
+    commit_message: str
+    commit: str
+    commit_hash: str
     pull_requests: list
+    pull_request: int
     url: str
+    html_report_url: str
     repo: str
     processed: bool
     owner: str
-    created_at: str
+    organization_slug: str
     sbom: list
 
     def __init__(self, **kwargs):
@@ -37,9 +46,22 @@ class Report:
                 setattr(self, key, value)
         if not hasattr(self, "processed"):
             self.processed = False
+        if not hasattr(self, "pull_request"):
+            self.pull_request = 0
+        if not hasattr(self, 'owner'):
+            self.owner = self.organization_slug
         if hasattr(self, "pull_requests"):
             if self.pull_requests is not None:
                 self.pull_requests = json.loads(str(self.pull_requests))
+            elif self.pull_request is not None and self.pull_request != 0:
+                self.pull_requests = [self.pull_request]
+        if not hasattr(self, 'pull_requests') and hasattr(self, 'pull_request'):
+            self.pull_requests = [self.pull_request]
+        if self.html_report_url is not None:
+            self.url = self.html_report_url
+        if not hasattr(self, 'commit'):
+            self.commit = self.commit_hash
+
 
     def __str__(self):
         return json.dumps(self.__dict__)
