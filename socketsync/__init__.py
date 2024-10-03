@@ -2,7 +2,7 @@ import logging
 
 
 __author__ = 'socket.dev'
-__version__ = '1.0.13'
+__version__ = '1.0.14'
 __all__ = [
     "log",
     "__version__",

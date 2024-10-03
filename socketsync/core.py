@@ -322,7 +322,7 @@ class Core:
                 branch=report.branch,
                 report_id=report.id,
                 pr=pr,
-                commit=report.commit_hash,
+                commit=report.commit,
                 created_at=report.created_at,
                 pkg_type=package.type,
                 pkg_name=package.name,
