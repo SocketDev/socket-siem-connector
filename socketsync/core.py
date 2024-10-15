@@ -272,8 +272,6 @@ class Core:
 
     @staticmethod
     def handle_reports(reports: list, issues: list) -> list:
-        if default_only:
-            reports = Core.get_latest_default_branch()
         for report in reports:
             report: Report
             log.debug(f"Getting results for scan id {report.id}")
