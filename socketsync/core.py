@@ -5,13 +5,7 @@ from socketdev import socketdev
 from socketsync.classes import Repository
 from socketsync.issues import AllIssues
 from socketsync.licenses import Licenses
-from socketsync.classes import (
-    Report,
-    IssueRecord,
-    Package,
-    Alert,
-    Purl
-)
+from socketsync.classes import Report, IssueRecord, Package, Alert, Purl
 
 global encoded_key
 global socket
@@ -31,10 +25,7 @@ repository_path = ""
 all_issues = AllIssues()
 licenses = Licenses()
 all_new_alerts = False
-default_branch_names = [
-        "master",
-        "main"
-    ]
+default_branch_names = ["master", "main"]
 default_only = False
 security_policy = {}
 date_format = "%Y-%m-%d %H:%M"
@@ -43,10 +34,7 @@ socket_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 log = logging.getLogger("socketdev")
 log.addHandler(logging.NullHandler())
 
-__all__ = [
-    "Core",
-    "log"
-]
+__all__ = ["Core", "log"]
 
 
 class Core:
@@ -64,18 +52,18 @@ class Core:
     properties: list
 
     def __init__(
-            self,
-            api_key: str,
-            base_api_url=None,
-            request_timeout=None,
-            enable_all_alerts=False,
-            start_date: str = None,
-            default_branches: list = None,
-            default_branch_only: bool = False,
-            report_id: str = None,
-            from_time: int = 300,
-            actions_override: list = None,
-            properties: list = None
+        self,
+        api_key: str,
+        base_api_url=None,
+        request_timeout=None,
+        enable_all_alerts=False,
+        start_date: str = None,
+        default_branches: list = None,
+        default_branch_only: bool = False,
+        report_id: str = None,
+        from_time: int = 300,
+        actions_override: list = None,
+        properties: list = None,
     ):
         self.actions_override = actions_override
         global actions
@@ -136,7 +124,7 @@ class Core:
             "base_path": base_path,
             "full_scan_path": full_scan_path,
             "repository_path": repository_path,
-            "security_policy": security_policy
+            "security_policy": security_policy,
         }
         log.debug(f"Org Settings: {json.dumps(output)}")
 
@@ -165,7 +153,7 @@ class Core:
         if orgs is not None and len(orgs) == 1:
             for key in orgs:
                 new_org_id = key
-                new_org_slug = orgs[key].get('slug')
+                new_org_slug = orgs[key].get("slug")
         return new_org_id, new_org_slug
 
     @staticmethod
@@ -187,9 +175,7 @@ class Core:
         for default in default_rules:
             if default not in org_rules:
                 action = default_rules[default]["action"]
-                org_rules[default] = {
-                    "action": action
-                }
+                org_rules[default] = {"action": action}
         return org_rules
 
     @staticmethod
@@ -204,7 +190,7 @@ class Core:
                 try:
                     report_data = socket.fullscans.metadata(org_slug, repo.head_full_scan_id)
                     report = Report(**report_data)
-                    from_time = (datetime.now() - timedelta(seconds=int(report_from_time)))
+                    from_time = datetime.now() - timedelta(seconds=int(report_from_time))
                     created_at = datetime.strptime(report.created_at, socket_date_format)
                     if created_at > from_time:
                         all_reports.append(report)
@@ -216,20 +202,16 @@ class Core:
     @staticmethod
     def get_repos() -> None:
         repos_info = {}
-        params = {
-            "sort": "name",
-            "direction": "asc",
-            "per_page": "10",
-            "page": 1
-        }
+        params = {"sort": "name", "direction": "asc", "per_page": "10", "page": 1}
         repos_data = socket.repos.get(org_slug, **params)
-        all_repos = repos_data['results']
-        next_page = repos_data['nextPage']
+        log.info(f"Found {len(repos_data['results'])} repositories")
+        all_repos = repos_data["results"]
+        next_page = repos_data["nextPage"]
         while next_page is not None:
-            params['page'] = next_page
+            params["page"] = next_page
             repos_data = socket.repos.get(org_slug, **params)
-            all_repos.extend(repos_data['results'])
-            next_page = repos_data['nextPage']
+            all_repos.extend(repos_data["results"])
+            next_page = repos_data["nextPage"]
             if next_page == 0:
                 next_page = None
         for repo_data in all_repos:
@@ -264,23 +246,43 @@ class Core:
         elif self.default_branch_only:
             reports = Core.get_latest_default_branch()
         else:
-            reports = socket.fullscans.get(org_slug, {'from': int(report_from_time)})
-        # reports = Core.create_reports_list(raw_reports, self.report_id)
+            raw_reports = socket.fullscans.get(org_slug, {"from": int(report_from_time)})
+
+            if raw_reports.get("success") is False:
+                log.error(f"Unable to get full scans: {raw_reports.get('message')}")
+                raise Exception(raw_reports.get("message"))
+
+            if raw_reports.get("success"):
+                del raw_reports["success"]
+            if raw_reports.get("status"):
+                del raw_reports["status"]
+
+            reports = [Report(**report_data) for report_data in raw_reports.get("results")]
+
         log.debug(f"Found {len(reports)} Socket Scans")
-        Core.handle_reports(reports, issues)
+        issues = Core.handle_reports(reports, issues)
         return issues
 
     @staticmethod
     def handle_reports(reports: list, issues: list) -> list:
         for report in reports:
-            report: Report
+            # report: Report
             log.debug(f"Getting results for scan id {report.id}")
-            sbom = socket.fullscans.stream(org_slug, report.id)
-            packages = socket.sbom.create_packages_dict(sbom)
+            packages = socket.fullscans.stream(org_slug, report.id)
+
+            if packages.get("success") is False:
+                log.error(f"Unable to stream full scan {report.id}: {packages.get('message')}")
+                raise Exception(packages.get("message"))
+
+            if packages.get("success"):
+                del packages["success"]
+            if packages.get("status"):
+                del packages["status"]
+
             log.debug(f"Finding issues in {report.id}")
             for package_id in packages:
                 package: Package
-                package = packages[package_id]
+                package = Package(**packages[package_id])
                 issues = Core.create_issue_alerts(package, issues, packages, report)
         return issues
 
@@ -307,10 +309,10 @@ class Core:
                 suggestion = props.suggestion
                 next_step_title = props.nextStepTitle
             else:
-                description = ''
+                description = ""
                 title = None
-                suggestion = ''
-                next_step_title = ''
+                suggestion = ""
+                next_step_title = ""
             introduced_by = Core.get_source_data(package, packages)
             pr = str(report.pull_request)
             is_error = Core.is_error(alert)
@@ -337,10 +339,10 @@ class Core:
                 next_step_title=next_step_title,
                 introduced_by=introduced_by,
                 is_error=is_error,
-                direct=package.direct
+                direct=package.direct,
             )
             if alert.type in security_policy:
-                action = security_policy[alert.type]['action']
+                action = security_policy[alert.type]["action"]
                 setattr(issue_alert, action, True)
                 setattr(issue_alert, "action", action)
             if (not all_new_alerts and actions is None and (issue_alert.error or issue_alert.warn)) or all_new_alerts:
@@ -363,7 +365,7 @@ class Core:
         :param alert:
         :return:
         """
-        if all_new_alerts or (alert.type in security_policy and security_policy[alert.type]['action'] == "error"):
+        if all_new_alerts or (alert.type in security_policy and security_policy[alert.type]["action"] == "error"):
             return True
         else:
             return False
@@ -388,7 +390,7 @@ class Core:
         else:
             for top_id in package.topLevelAncestors:
                 top_package: Package
-                top_package = packages[top_id]
+                top_package = Package(**packages[top_id])
                 manifests = ""
                 top_purl = f"{top_package.type}/{top_package.name}@{top_package.version}"
                 for manifest_data in top_package.manifestFiles:
@@ -420,7 +422,7 @@ class Core:
             introduced_by=introduced_by,
             author=package.author or [],
             size=package.size,
-            transitives=package.transitives
+            transitives=package.transitives,
         )
         return purl, package
 
@@ -458,4 +460,3 @@ class Core:
             license_obj = getattr(licenses, license_str)
             package.license_text = license_obj.licenseText
         return package
-
