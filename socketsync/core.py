@@ -90,9 +90,10 @@ class Core:
             start_time = datetime.strptime(self.start_date, date_format)
             end_time = datetime.now(timezone.utc)
             diff = (end_time - start_time).total_seconds()
-            report_from_time = diff
+            diff_time = diff
         else:
-            report_from_time = from_time
+            diff_time = from_time
+        report_from_time = int((datetime.now(timezone.utc) - timedelta(seconds=diff_time)).timestamp())
         self.socket_date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
         self.base_api_url = base_api_url
         self.request_timeout = request_timeout
