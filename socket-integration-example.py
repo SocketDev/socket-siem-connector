@@ -17,7 +17,8 @@ from_time = int((end_time - start_time).total_seconds())
 
 if __name__ == '__main__':
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    # from_time = os.getenv("FROM_TIME") or 300
+    if from_time is None:
+        from_time = os.getenv("FROM_TIME") or 300
     default_branches = [
         "master",
         "main"
