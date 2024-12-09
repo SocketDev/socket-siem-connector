@@ -26,11 +26,10 @@ The connectors supported by this script have some shared configuration in order 
 | Option              | Required | Format           | Description                                                                                                                                 |
 |---------------------|----------|------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | api_key             | True     | string           | This is the Socket API Key created in the Socket dashboard. This should have the scoped permissions to access reports                       |
-| from_time           | False    | int              | This is the number of seconds to pull reports from. If this is not defined then it will pull the last 30 days of reports.                   |
 | report_id           | False    | Socket Report ID | If this is provided then only the specified report ID will be processed                                                                     |
 | request_timeout     | False    | int              | This is the number of seconds to wait for an API request to complete before killing it and returning an error. Defaults to 30 seconds       |
 | default_branch_only | False    | boolean          | If enabled only reports where the branch name matches what is the latest report for each default branch per repo                            |
-| from_time           | False    | int              | Period in seconds to pull reports when not specifying a specific `report_id`. If not set defaults to 30 days                                |
+| from_time           | False    | int              | Period in seconds to pull reports when not specifying a specific `report_id`. If not set defaults to 5 minutes                              |
 | actions_override    | False    | list[str]        | List of acceptable values to override the security policy configuration of issues to include. I.E. `error`, `warn`, `monitor`, and `ignore` |
 
 
@@ -43,10 +42,13 @@ from socketsync.core import Core
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE")
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         report_id=report_id,
         request_timeout=300
     )
@@ -75,11 +77,14 @@ from socketsync.connectors.csv import CSV
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE")
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         report_id=report_id
     )
     issue_data = core.get_issues()
@@ -113,11 +118,14 @@ from socketsync.connectors.bigquery import BigQuery
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE")
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         report_id=report_id
     )
     issue_data = core.get_issues()
@@ -147,11 +155,14 @@ from socketsync.connectors.panther import Panther
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE")
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         report_id=report_id
     )
     issue_data = core.get_issues()
@@ -178,11 +189,14 @@ from socketsync.connectors.elastic import Elastic
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE")
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         report_id=report_id
     )
     issue_data = core.get_issues()
@@ -218,11 +232,14 @@ from socketsync.connectors.webhook import Webhook
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE")
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         report_id=report_id
     )
     issue_data = core.get_issues()
@@ -256,11 +273,14 @@ from socketsync.connectors.slack import Slack
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    start_date = os.getenv("START_DATE")
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
     core = Core(
         api_key=api_key,
-        start_date=start_date,
+        from_time=from_time,
         report_id=report_id
     )
     issue_data = core.get_issues()
