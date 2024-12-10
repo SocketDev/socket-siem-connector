@@ -2,7 +2,7 @@ import logging
 
 
 __author__ = "socket.dev"
-__version__ = "1.0.19"
+__version__ = "1.0.21"
 __all__ = ["log", "__version__", "columns", "default_headers"]
 
 log = logging.getLogger("socketdev")

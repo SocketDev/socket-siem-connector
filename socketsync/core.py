@@ -255,18 +255,24 @@ class Core:
             reports = Core.get_latest_default_branch()
             return reports
 
-        raw_reports = socket.fullscans.get(org_slug, {"from": int(report_from_time)})
+        done = False
+        reports = []
+        next_page = None
+        while not done:
+            results = socket.fullscans.get(org_slug, {"from": int(report_from_time), "page": next_page})
+            if next_page == 1:
+                done = True
+            next_page = results.get("nextPage")
+            if results.get("success") is False:
+                log.error(f"Unable to get full scans: {results.get('message')}")
+                raise Exception(results.get("message"))
 
-        if raw_reports.get("success") is False:
-            log.error(f"Unable to get full scans: {raw_reports.get('message')}")
-            raise Exception(raw_reports.get("message"))
+            if results.get("success"):
+                del results["success"]
+            if results.get("status"):
+                del results["status"]
 
-        if raw_reports.get("success"):
-            del raw_reports["success"]
-        if raw_reports.get("status"):
-            del raw_reports["status"]
-
-        reports = [Report(**report_data) for report_data in raw_reports.get("results")]
+            reports.extend([Report(**report_data) for report_data in results.get("results")])
         return reports
 
     @staticmethod
