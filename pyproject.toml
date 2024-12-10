@@ -15,10 +15,12 @@ license = {file = "LICENSE"}
 description = "Socket Security Sync Tool"
 keywords = ["socketsecurity", "socket.dev", "sca", "oss", "security", "sdk"]
 authors = [
-    {name = "Douglas Coburn", email = "douglas@socket.dev"}
+    {name = "Douglas Coburn", email = "douglas@socket.dev"},
+    {name = "Eric Hibbs", email = "eric@socket.dev"}
 ]
 maintainers = [
-    {name = "Douglas Coburn", email = "douglas@socket.dev"}
+    {name = "Douglas Coburn", email = "douglas@socket.dev"},
+    {name = "Eric Hibbs", email = "eric@socket.dev"}
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",

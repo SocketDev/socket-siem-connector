@@ -239,30 +239,35 @@ class Core:
         return reports
 
     def get_issues(self) -> list:
-        issues = []
+        reports = self.get_reports()
+
+        log.debug(f"Found {len(reports)} Socket Scans")
+        issues = Core.handle_reports(reports, [])
+        return issues
+
+    def get_reports(self) -> list:
         if self.report_id is not None:
             report_data = socket.fullscans.metadata(org_slug, self.report_id)
             report = Report(**report_data)
-            reports = [report]
-        elif self.default_branch_only:
+            return [report]
+
+        if self.default_branch_only:
             reports = Core.get_latest_default_branch()
-        else:
-            raw_reports = socket.fullscans.get(org_slug, {"from": int(report_from_time)})
+            return reports
 
-            if raw_reports.get("success") is False:
-                log.error(f"Unable to get full scans: {raw_reports.get('message')}")
-                raise Exception(raw_reports.get("message"))
+        raw_reports = socket.fullscans.get(org_slug, {"from": int(report_from_time)})
 
-            if raw_reports.get("success"):
-                del raw_reports["success"]
-            if raw_reports.get("status"):
-                del raw_reports["status"]
+        if raw_reports.get("success") is False:
+            log.error(f"Unable to get full scans: {raw_reports.get('message')}")
+            raise Exception(raw_reports.get("message"))
 
-            reports = [Report(**report_data) for report_data in raw_reports.get("results")]
+        if raw_reports.get("success"):
+            del raw_reports["success"]
+        if raw_reports.get("status"):
+            del raw_reports["status"]
 
-        log.debug(f"Found {len(reports)} Socket Scans")
-        issues = Core.handle_reports(reports, issues)
-        return issues
+        reports = [Report(**report_data) for report_data in raw_reports.get("results")]
+        return reports
 
     @staticmethod
     def handle_reports(reports: list, issues: list) -> list:
