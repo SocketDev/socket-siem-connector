@@ -14,7 +14,7 @@ jobs:
 
       - name: Set preview version
         run: |
-          BASE_VERSION=$(grep -o "__version__.*" socketsync/__init__.py | awk '{print $3}' | tr -d "'")
+          BASE_VERSION=$(python -c "from socketsync import __version__; print(__version__)")
           PREVIEW_VERSION="${BASE_VERSION}.dev${{ github.event.pull_request.number }}${{ github.event.pull_request.commits }}"
           echo "VERSION=${PREVIEW_VERSION}" >> $GITHUB_ENV
 
