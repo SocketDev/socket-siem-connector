@@ -28,7 +28,7 @@ The connectors supported by this script have some shared configuration in order 
 | api_key             | True     | string           | This is the Socket API Key created in the Socket dashboard. This should have the scoped permissions to access reports                       |
 | report_id           | False    | Socket Report ID | If this is provided then only the specified report ID will be processed                                                                     |
 | request_timeout     | False    | int              | This is the number of seconds to wait for an API request to complete before killing it and returning an error. Defaults to 30 seconds       |
-| default_branch_only | False    | boolean          | If enabled only reports where the branch name matches what is the latest report for each default branch per repo                            |
+| default_branch_only | False    | boolean          | If enabled only use the latest report from each repo's default branch                                                                       |
 | from_time           | False    | int              | Period in seconds to pull reports when not specifying a specific `report_id`. If not set defaults to 5 minutes                              |
 | actions_override    | False    | list[str]        | List of acceptable values to override the security policy configuration of issues to include. I.E. `error`, `warn`, `monitor`, and `ignore` |
 
