@@ -25,7 +25,12 @@ jobs:
 
           # Get version from main branch
           git checkout origin/main
-          MAIN_VERSION=$(python -c "from socketsync import __version__; print(__version__)")
+          MAIN_VERSION=$(python -c "
+          import importlib
+          import socketsync
+          importlib.reload(socketsync)
+          print(socketsync.__version__)
+          ")
           echo "Debug main version: $MAIN_VERSION"
           echo "MAIN_VERSION=${MAIN_VERSION}" >> $GITHUB_ENV
 
