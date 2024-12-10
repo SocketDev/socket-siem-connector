@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-      - 'socketsecurity/**'
+      - 'socketsync/**'
       - 'setup.py'
       - 'pyproject.toml'
 
@@ -19,12 +19,12 @@ jobs:
         id: version_check
         run: |
           # Get version from current PR
-          PR_VERSION=$(grep -o "__version__.*" socketsecurity/__init__.py | awk '{print $3}' | tr -d "'")
+          PR_VERSION=$(grep -o "__version__.*" socketsync/__init__.py | awk '{print $3}' | tr -d "'")
           echo "PR_VERSION=$PR_VERSION" >> $GITHUB_ENV
 
           # Get version from main branch
           git checkout origin/main
-          MAIN_VERSION=$(grep -o "__version__.*" socketsecurity/__init__.py | awk '{print $3}' | tr -d "'")
+          MAIN_VERSION=$(grep -o "__version__.*" socketsync/__init__.py | awk '{print $3}' | tr -d "'")
           echo "MAIN_VERSION=$MAIN_VERSION" >> $GITHUB_ENV
 
           # Compare versions using Python

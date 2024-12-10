@@ -15,7 +15,7 @@ jobs:
       - name: Check if version exists in PyPI
         id: version_check
         run: |
-          if ! curl -s -f https://pypi.org/pypi/socketsecurity/${{ inputs.version }}/json > /dev/null; then
+          if ! curl -s -f https://pypi.org/pypi/socketsync/${{ inputs.version }}/json > /dev/null; then
             echo "Error: Version ${{ inputs.version }} not found on PyPI"
             exit 1
           fi

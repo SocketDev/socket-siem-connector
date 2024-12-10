@@ -16,7 +16,7 @@ jobs:
       - name: Get Version
         id: version
         run: |
-          RAW_VERSION=$(python -c "from socketsecurity import __version__; print(__version__)")
+          RAW_VERSION=$(python -c "from socketsync import __version__; print(__version__)")
           echo "VERSION=$RAW_VERSION" >> $GITHUB_ENV
           if [ "v$RAW_VERSION" != "${{ github.ref_name }}" ]; then
             echo "Error: Git tag (${{ github.ref_name }}) does not match package version (v$RAW_VERSION)"
@@ -28,7 +28,7 @@ jobs:
         env:
           VERSION: ${{ env.VERSION }}
         run: |
-          if curl -s -f https://pypi.org/pypi/socketsecurity/$VERSION/json > /dev/null; then
+          if curl -s -f https://pypi.org/pypi/socketsync/$VERSION/json > /dev/null; then
             echo "Version ${VERSION} already exists on PyPI"
             echo "pypi_exists=true" >> $GITHUB_OUTPUT
           else
@@ -72,9 +72,9 @@ jobs:
           VERSION: ${{ env.VERSION }}
         run: |
           for i in {1..30}; do
-            if pip install socketsecurity==${VERSION}; then
+            if pip install socketsync==${VERSION}; then
               echo "Package ${VERSION} is now available and installable on PyPI"
-              pip uninstall -y socketsecurity
+              pip uninstall -y socketsync
               echo "success=true" >> $GITHUB_OUTPUT
               exit 0
             fi
