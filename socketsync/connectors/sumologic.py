@@ -18,7 +18,7 @@ class Sumologic:
         Will iterate through events and send to SIEM
         :param events: A list containing the events to send:
         :param plugin_name: A string of the plugin name to use for the file name
-        :return: 
+        :return:
         """
 
         for event in events:

@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 from socketsync.core import Core
 from socketsync.connectors.elastic import Elastic
@@ -11,10 +10,8 @@ from socketsync.connectors.slack import Slack
 from socketsync.connectors.sumologic import Sumologic
 
 from datetime import datetime, timezone
-start_date = "2024-09-10 10:00"
-start_time = datetime.strptime(start_date, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
-end_time = datetime.now(timezone.utc)
-from_time = int((end_time - start_time).total_seconds())
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 
 if __name__ == '__main__':
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)

@@ -39,13 +39,15 @@ The connectors supported by this script have some shared configuration in order 
 ```python
 import os
 from socketsync.core import Core
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
 
     core = Core(
         api_key=api_key,
@@ -74,14 +76,16 @@ Initializing Options:
 import os
 from socketsync.core import Core
 from socketsync.connectors.csv import CSV
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
 
     core = Core(
         api_key=api_key,
@@ -115,14 +119,16 @@ Initializing Options:
 import os
 from socketsync.core import Core
 from socketsync.connectors.bigquery import BigQuery
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
 
     core = Core(
         api_key=api_key,
@@ -149,15 +155,16 @@ Initializing Options:
 import os
 from socketsync.core import Core
 from socketsync.connectors.sumologic import Sumologic
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
     http_source_url = os.getenv("SUMO_HTTP_URL")
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
@@ -184,14 +191,16 @@ Initializing Options:
 import os
 from socketsync.core import Core
 from socketsync.connectors.panther import Panther
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
 
     core = Core(
         api_key=api_key,
@@ -218,14 +227,16 @@ The Elasticsearch connector should work with on prem or cloud hosted Elastic sea
 import os
 from socketsync.core import Core
 from socketsync.connectors.elastic import Elastic
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
 
     core = Core(
         api_key=api_key,
@@ -261,15 +272,16 @@ Initialize Options:
 import os
 from socketsync.core import Core
 from socketsync.connectors.webhook import Webhook
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
@@ -302,15 +314,16 @@ Initialize Options:
 import os
 from socketsync.core import Core
 from socketsync.connectors.slack import Slack
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
 
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
     days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
-    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
