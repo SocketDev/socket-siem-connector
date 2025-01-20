@@ -47,8 +47,6 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
@@ -84,9 +82,8 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
+    
     report_id = os.getenv("SOCKET_REPORT_ID")
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
@@ -127,9 +124,7 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
@@ -163,7 +158,6 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
     http_source_url = os.getenv("SUMO_HTTP_URL")
     core = Core(
         api_key=api_key,
@@ -199,9 +193,7 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
@@ -235,9 +227,7 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
-
     core = Core(
         api_key=api_key,
         from_time=from_time,
@@ -280,7 +270,6 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
     core = Core(
         api_key=api_key,
@@ -322,7 +311,6 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    days_ago = os.getenv("DAYS_AGO") or exit(1)
     report_id = os.getenv("SOCKET_REPORT_ID")
     core = Core(
         api_key=api_key,
