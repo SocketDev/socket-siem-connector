@@ -260,7 +260,7 @@ class Core:
         next_page = None
         while not done:
             results = socket.fullscans.get(org_slug, {"from": int(report_from_time), "page": next_page})
-            if next_page == 1:
+            if next_page == 0:
                 done = True
             next_page = results.get("nextPage")
             if results.get("success") is False:

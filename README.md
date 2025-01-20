@@ -11,6 +11,7 @@ This tool supports the following connectors:
 - Elasticsearch
 - WebHook
 - Slack
+- SumoLogic
 
 ### Other SIEM Integrations
 
@@ -132,6 +133,38 @@ if __name__ == '__main__':
     bigquery_table = os.getenv('GOOGLE_TABLE') or exit(1)
     bigquery = BigQuery(bigquery_table)
     errors = bigquery.add_dataset(issue_data, streaming=True)
+```
+
+### SumoLogic
+
+The SumoLogic plugin will send results to a HTTP Collector URL for SumoLogic
+
+Initializing Options:
+
+| Option | Required | Default | Description                                       |
+|--------|----------|---------|---------------------------------------------------|
+| http_source_url  | True     | None    | This is the HTTP Collector URL to send results to |
+
+```python
+import os
+from socketsync.core import Core
+from socketsync.connectors.sumologic import Sumologic
+
+if __name__ == '__main__':
+    socket_org = os.getenv("SOCKET_ORG") or exit(1)
+    api_key = os.getenv("SOCKET_API_KEY") or exit(1)
+    days_ago = os.getenv("DAYS_AGO") or exit(1)
+    http_source_url = os.getenv("SUMO_HTTP_URL")
+
+    from_time = days_ago * 24 * 60 * 60 #Convert days to seconds
+
+    core = Core(
+        api_key=api_key,
+        from_time=from_time,
+    )
+    issue_data = core.get_issues()
+    sumo = Sumologic(http_source_url=http_source_url)
+    sumo.send_events(issue_data, "socket-sync-alerts")
 ```
 
 ### Panther

@@ -8,6 +8,7 @@ from socketsync.connectors.panther import Panther
 from socketsync.connectors.csv import CSV
 from socketsync.connectors.webhook import Webhook
 from socketsync.connectors.slack import Slack
+from socketsync.connectors.sumologic import Sumologic
 
 from datetime import datetime, timezone
 start_date = "2024-09-10 10:00"
@@ -25,7 +26,8 @@ if __name__ == '__main__':
     core = Core(
         api_key=api_key,
         from_time=from_time,
-        request_timeout=300
+        request_timeout=300,
+        report_id="a96abb17-5750-4452-9e7e-33673070f0f2"
     )
     # logging.basicConfig(level=logging.DEBUG)
     # core.set_log_level(logging.DEBUG)
@@ -37,6 +39,12 @@ if __name__ == '__main__':
         file=csv_file
     )
     csv.write_csv(issue_data)
+
+    # Sumologic Example
+    sumo_logic_http_source_url = os.getenv("SUMO_LOGIC_HTTP_SOURCE_URL", None)
+    sumo = Sumologic(sumo_logic_http_source_url)
+    sumo_status = sumo.send_events(issue_data, "socket-siem-connector")
+    print(f"Sumologic Result: {sumo_status}")
 
     # Elasticsearch Example
     elastic_token = os.getenv('ELASTIC_TOKEN') or exit(1)
