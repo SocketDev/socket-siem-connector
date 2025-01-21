@@ -36,18 +36,6 @@ jobs:
             echo "pypi_exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check Docker image existence
-        id: docker_check
-        env:
-          VERSION: ${{ env.VERSION }}
-        run: |
-          if curl -s -f "https://hub.docker.com/v2/repositories/socketdev/cli/tags/${{ env.VERSION }}" > /dev/null; then
-            echo "Docker image socketdev/cli:${VERSION} already exists"
-            echo "docker_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "docker_exists=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Build package
         if: steps.version_check.outputs.pypi_exists != 'true'
         run: |
