@@ -91,10 +91,7 @@ jobs:
             Install with:
             \`\`\`bash
             pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple socketsync==${version}
-            \`\`\`
-
-            Docker image: \`socketdev/cli:pr-${prNumber}\`
-            `;
+            \`\`\``;
 
             if (botComment) {
               // Update existing comment
@@ -132,23 +129,3 @@ jobs:
           done
           echo "success=false" >> $GITHUB_OUTPUT
           exit 1
-
-      - name: Login to Docker Hub
-        if: steps.verify_package.outputs.success == 'true'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build & Push Docker Preview
-        if: steps.verify_package.outputs.success == 'true'
-        uses: docker/build-push-action@v5
-        env:
-          VERSION: ${{ env.VERSION }}
-        with:
-          push: true
-          tags: socketdev/cli:pr-${{ github.event.pull_request.number }}
-          build-args: |
-            CLI_VERSION=${{ env.VERSION }}
-            PIP_INDEX_URL=https://test.pypi.org/simple
-            PIP_EXTRA_INDEX_URL=https://pypi.org/simple
