@@ -12,6 +12,7 @@ This tool supports the following connectors:
 - WebHook
 - Slack
 - SumoLogic
+- MS Sentinel
 
 ### Other SIEM Integrations
 
@@ -166,6 +167,44 @@ if __name__ == '__main__':
     issue_data = core.get_issues()
     sumo = Sumologic(http_source_url=http_source_url)
     sumo.send_events(issue_data, "socket-sync-alerts")
+```
+
+### Microsoft Sentinel
+
+The Microsoft Sentinel will use the Workspace ID and Shared Key to send events via the API to MS Sentinel
+
+Initializing Options:
+
+| Option       | Required | Default | Description                             |
+|--------------|----------|---------|-----------------------------------------|
+| workspace_id | True     | None    | Microsoft Workspace ID for your Account |
+| shared_key   | True     | None    | Microsoft Shared Key for authentication |
+
+```python
+import os
+from socketsync.core import Core
+from socketsync.connectors.sentinel import Sentinel
+from datetime import datetime, timezone
+start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
+
+
+if __name__ == '__main__':
+    socket_org = os.getenv("SOCKET_ORG") or exit(1)
+    api_key = os.getenv("SOCKET_API_KEY") or exit(1)
+    http_source_url = os.getenv("SUMO_HTTP_URL")
+    core = Core(
+        api_key=api_key,
+        from_time=from_time,
+    )
+    issue_data = core.get_issues()
+    ms_sentinel_workspace_id = os.getenv("MS_SENTINEL_WORKSPACE_ID", None)
+    ms_sentinel_shared_key = os.getenv("MS_SENTINEL_SHARED_KEY", None)
+    if not ms_sentinel_workspace_id or not ms_sentinel_shared_key:
+        print("MS_SENTINEL_WORKSPACE_ID and MS_SENTINEL_SHARED_KEY must be set.")
+        exit(1)
+    sentinel = Sentinel(ms_sentinel_workspace_id, ms_sentinel_shared_key)
+    sentinel.send_events(issue_data, "SocketSiemConnector")
 ```
 
 ### Panther
