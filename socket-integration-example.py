@@ -8,6 +8,7 @@ from socketsync.connectors.csv import CSV
 from socketsync.connectors.webhook import Webhook
 from socketsync.connectors.slack import Slack
 from socketsync.connectors.sumologic import Sumologic
+from socketsync.connectors.sentinel import Sentinel
 
 from datetime import datetime, timezone
 start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
@@ -24,7 +25,7 @@ if __name__ == '__main__':
         api_key=api_key,
         from_time=from_time,
         request_timeout=300,
-        report_id="a96abb17-5750-4452-9e7e-33673070f0f2"
+        report_id="a9b00b69-922a-4a4c-9022-dd994bfa4e80"
     )
     # logging.basicConfig(level=logging.DEBUG)
     # core.set_log_level(logging.DEBUG)
@@ -36,7 +37,13 @@ if __name__ == '__main__':
         file=csv_file
     )
     csv.write_csv(issue_data)
-
+    ms_sentinel_workspace_id = os.getenv("MS_SENTINEL_WORKSPACE_ID", None)
+    ms_sentinel_shared_key = os.getenv("MS_SENTINEL_SHARED_KEY", None)
+    if not ms_sentinel_workspace_id or not ms_sentinel_shared_key:
+        print("MS_SENTINEL_WORKSPACE_ID and MS_SENTINEL_SHARED_KEY must be set.")
+        exit(1)
+    sentinel = Sentinel(ms_sentinel_workspace_id, ms_sentinel_shared_key)
+    sentinel.send_events(issue_data, "SocketSiemConnector")
     # Sumologic Example
     sumo_logic_http_source_url = os.getenv("SUMO_LOGIC_HTTP_SOURCE_URL", None)
     sumo = Sumologic(sumo_logic_http_source_url)
