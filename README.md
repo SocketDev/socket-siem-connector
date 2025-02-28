@@ -33,6 +33,7 @@ The connectors supported by this script have some shared configuration in order 
 | default_branch_only | False    | boolean          | If enabled only use the latest report from each repo's default branch                                                                       |
 | from_time           | False    | int              | Period in seconds to pull reports when not specifying a specific `report_id`. If not set defaults to 5 minutes                              |
 | actions_override    | False    | list[str]        | List of acceptable values to override the security policy configuration of issues to include. I.E. `error`, `warn`, `monitor`, and `ignore` |
+| repos_filter        | False    | list[str]        | List of repos to restrict results to if desired                                                                                             |
 
 
 ### Example
@@ -48,11 +49,16 @@ from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 if __name__ == '__main__':
     socket_org = os.getenv("SOCKET_ORG") or exit(1)
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
+    report_id = ""
+    repos = [
+        "example"
+    ]
     core = Core(
         api_key=api_key,
         from_time=from_time,
         report_id=report_id,
-        request_timeout=300
+        request_timeout=300,
+        repos_filter=repos
     )
     issue_data = core.get_issues()
 ```
