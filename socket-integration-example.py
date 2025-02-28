@@ -11,24 +11,25 @@ from socketsync.connectors.sumologic import Sumologic
 from socketsync.connectors.sentinel import Sentinel
 
 from datetime import datetime, timezone
-start_time = datetime.strptime("2024-09-10 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+start_time = datetime.strptime("2025-02-20 10:00", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
 from_time = int((datetime.now(timezone.utc) - start_time).total_seconds())
 
 if __name__ == '__main__':
     api_key = os.getenv("SOCKET_API_KEY") or exit(1)
-    # from_time = os.getenv("FROM_TIME") or 300
     default_branches = [
         "master",
         "main"
+    ]
+    repos = [
+        'javascript-threats'
     ]
     core = Core(
         api_key=api_key,
         from_time=from_time,
         request_timeout=300,
-        report_id="a9b00b69-922a-4a4c-9022-dd994bfa4e80"
+        report_id=None,
+        repos_filter=repos
     )
-    # logging.basicConfig(level=logging.DEBUG)
-    # core.set_log_level(logging.DEBUG)
     issue_data = core.get_issues()
 
     # CSV Example

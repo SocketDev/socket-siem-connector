@@ -17,6 +17,7 @@ repos: dict
 socket: socketdev
 org_id: str
 org_slug: str
+filter_repos: list = []
 report_from_time: int
 actions: list[str]
 timeout = 30
@@ -50,6 +51,7 @@ class Core:
     actions_override: list[str]
     enable_all_alerts: bool
     properties: list
+    repos_filter: list
 
     def __init__(
         self,
@@ -64,6 +66,7 @@ class Core:
         from_time: int = 300,
         actions_override: list = None,
         properties: list = None,
+        repos_filter: list = None,
     ):
         self.actions_override = actions_override
         global actions
@@ -72,6 +75,9 @@ class Core:
         self.report_id = report_id
         self.default_branches = default_branches
         self.from_time = from_time
+        if repos_filter is not None and len(repos_filter) > 0:
+            global filter_repos
+            filter_repos = repos_filter
         self.properties = properties
         if self.default_branches is not None:
             global default_branch_names
@@ -163,20 +169,10 @@ class Core:
         Get the Security policy and determine the effective Org security policy
         :return:
         """
-        data = socket.settings.get(org_id)
-        defaults = data.get("defaults")
-        default_rules = defaults.get("issueRules")
-        entries = data.get("entries")
-        org_rules = {}
-        for org_set in entries:
-            settings = org_set.get("settings")
-            if settings is not None:
-                org_details = settings.get("organization")
-                org_rules = org_details.get("issueRules")
-        for default in default_rules:
-            if default not in org_rules:
-                action = default_rules[default]["action"]
-                org_rules[default] = {"action": action}
+        response = socket.settings.get(org_slug)
+        org_rules = response.get('securityPolicyRules')
+        if org_rules is None:
+            raise Exception("Unable to get security policy results")
         return org_rules
 
     @staticmethod
@@ -217,6 +213,8 @@ class Core:
                 next_page = None
         for repo_data in all_repos:
             repo = Repository(**repo_data)
+            if len(filter_repos) > 0 and repo.name not in filter_repos:
+                continue
             repos_info[repo.id] = repo
         global repos
         repos = repos_info
@@ -228,6 +226,8 @@ class Core:
         commits = []
         for raw_report in raw_reports:
             report = Report(**raw_report)
+            if len(filter_repos) > 0 and report.repo not in filter_repos:
+                continue
             if report_id is not None and report_id == report.id:
                 reports.append(report)
             elif report_id is None:
@@ -258,10 +258,12 @@ class Core:
         done = False
         reports = []
         next_page = None
+        print(report_from_time)
         while not done:
-            results = socket.fullscans.get(org_slug, {"from": int(report_from_time), "page": next_page})
             if next_page == 0:
                 done = True
+            params = {"per_page": 100, "from": int(report_from_time), "page": next_page}
+            results = socket.fullscans.get(org_slug, params)
             next_page = results.get("nextPage")
             if results.get("success") is False:
                 log.error(f"Unable to get full scans: {results.get('message')}")
@@ -279,6 +281,9 @@ class Core:
     def handle_reports(reports: list, issues: list) -> list:
         for report in reports:
             # report: Report
+            if len(filter_repos) > 0 and report.repo not in filter_repos:
+                continue
+            log.debug(f"Getting results for report id {report.id}")
             log.debug(f"Getting results for scan id {report.id}")
             packages = socket.fullscans.stream(org_slug, report.id)
 
