@@ -44,6 +44,6 @@ jobs:
 
       - name: Publish to PyPI
         if: steps.version_check.outputs.pypi_exists != 'true'
-        uses: pypa/gh-action-pypi-publish@v1.8.11
+        uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           password: ${{ secrets.PYPI_TOKEN }}
