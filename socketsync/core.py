@@ -171,10 +171,14 @@ class Core:
     def assert_enterprise_plan() -> None:
         """
         Validate that the current organization is on the Enterprise plan. If not, fail fast.
-        :param organization_id: The organization id to check
         :return: None
-        :raises Exception: if the organization is not on the Enterprise plan
+        :raises Exception: if the plan is unavailable or is not an Enterprise plan
         """
+        if not isinstance(org_plan, str) or not org_plan:
+            raise Exception(
+                "Unable to determine the organization plan. The API token must "
+                "have access to exactly one organization"
+            )
         is_enterprise = "enterprise" in org_plan.lower()
         if not is_enterprise:
             raise Exception("This script requires an Enterprise plan organization")
